@@ -17,7 +17,8 @@ class WalletCreateResult {
 
   bool get isEmpty => accountBuffer.isEmpty;
 
-  WalletCreateResult(this._recoveryBuffer, this._devicePinBuffer, this._accountBuffer);
+  WalletCreateResult(
+      this._recoveryBuffer, this._devicePinBuffer, this._accountBuffer);
 
   @override
   String toString() {
@@ -43,13 +44,37 @@ class WalletProvider {
     return _walletProvider;
   }
 
+  int basic_create_wallet(Uint8List pinCode, int aesKeyDocId, String questions,
+      String answers, int confidence) {
+    final Pointer<Uint8> pinCodePtr = this.getPointer(pinCode);
+    final Pointer<Utf8> questionsPtr = questions.toNativeUtf8();
+    final Pointer<Utf8> answersPtr = answers.toNativeUtf8();
+
+    /// Get a length from pointers above.
+    final int pinCodeLen = pinCode.length;
+    final int questionsLen = questionsPtr.length;
+    final int answersLen = answersPtr.length;
+
+    int responseId = _libProvider.walletCreate(
+        pinCodePtr,
+        pinCodeLen,
+        aesKeyDocId,
+        questionsPtr,
+        questionsLen,
+        answersPtr,
+        answersLen,
+        confidence);
+
+    return responseId;
+  }
+
   /// Params that should be passed in:
   /// [pinCode] String,
   /// [questions] String,
   /// [answers] String,
   /// [confidence] int.
-  WalletCreateResult createWallet(
-      Uint8List pinCode, int aesKeyDocId, String questions, String answers, int confidence) {
+  WalletCreateResult createWallet(Uint8List pinCode, int aesKeyDocId,
+      String questions, String answers, int confidence) {
     /// Create a pointers from passed in data.
 
     final Pointer<Uint8> pinCodePtr = this.getPointer(pinCode);
@@ -63,7 +88,14 @@ class WalletProvider {
 
     /// Claim wallet id after it's creation.
     int responseId = _libProvider.walletCreate(
-        pinCodePtr, pinCodeLen, aesKeyDocId, questionsPtr, questionsLen, answersPtr, answersLen, confidence);
+        pinCodePtr,
+        pinCodeLen,
+        aesKeyDocId,
+        questionsPtr,
+        questionsLen,
+        answersPtr,
+        answersLen,
+        confidence);
 
     /// Create a document based on wallet id.
     final DMemoryDoc responseDoc = DMemoryDoc.fromId(responseId);
@@ -801,7 +833,8 @@ class OperationResult<T> {
     return OperationResult<T>._success(data);
   }
 
-  static OperationResult onError(ErrorCode errorCode, {String? debugMessage, dynamic data}) {
+  static OperationResult onError(ErrorCode errorCode,
+      {String? debugMessage, dynamic data}) {
     return OperationResult._error(errorCode, debugMessage, data: data);
   }
 }

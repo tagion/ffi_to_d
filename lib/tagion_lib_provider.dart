@@ -15,7 +15,7 @@ class LibProvider {
   LibProvider._internal();
 
   /// Function for opening dynamic library.
-  static DynamicLibrary dyLibOpen(String name, {String path = 'lib/'}) {
+  static DynamicLibrary dyLibOpen(String name, {String path = './'}) {
     var fullPath = _platformPath(name, path: path);
     if (Platform.isIOS) {
       return DynamicLibrary.process();
@@ -27,10 +27,10 @@ class LibProvider {
   /// Function returning path to library object.
   static String _platformPath(String name, {String path = ''}) {
     if (Platform.isLinux) {
-      return path + 'lib' + name + '.so';
+      return path + 'linux/' + 'lib' + name + '.so';
     }
     if (Platform.isAndroid) {
-      return path + 'lib' + name + '.so';
+      return path + 'android/' + 'lib' + name + '.so';
     }
     if (Platform.isMacOS) {
       return path + 'lib' + name + '.a';
